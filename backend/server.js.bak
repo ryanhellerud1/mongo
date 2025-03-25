@@ -1,0 +1,153 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+// Routes
+const userRoutes = require('./routes/userRoutes');
+
+// Config
+dotenv.config();
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB Connected'))
+  .catch(err => console.error('MongoDB Connection Error:', err));
+
+// In-memory storage
+let users = [];
+let userId = 1;
+
+// Generate JWT token
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret', {
+    expiresIn: '30d',
+  });
+};
+
+// Auth middleware
+const protect = async (req, res, next) => {
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+      
+      const user = users.find(u => u.id === decoded.id);
+      if (!user) {
+        return res.status(401).json({ message: 'Not authorized, user not found' });
+      }
+      
+      // Remove password from user object
+      const { password, ...userWithoutPassword } = user;
+      req.user = userWithoutPassword;
+      next();
+    } catch (error) {
+      console.error('Auth error:', error);
+      res.status(401).json({ message: 'Not authorized, token failed' });
+    }
+  } else if (!token) {
+    res.status(401).json({ message: 'Not authorized, no token' });
+  }
+};
+
+// Routes
+// Register user
+app.post('/api/users', async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    // Check if user exists
+    const userExists = users.find(user => user.email === email);
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create user
+    const user = {
+      id: userId++,
+      name,
+      email,
+      password: hashedPassword,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    users.push(user);
+
+    // Return user data without password
+    const { password: pwd, ...userWithoutPassword } = user;
+    
+    res.status(201).json({
+      ...userWithoutPassword,
+      token: generateToken(user.id)
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Login user
+app.post('/api/users/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find user
+    const user = users.find(user => user.email === email);
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Return user data without password
+    const { password: pwd, ...userWithoutPassword } = user;
+    
+    res.json({
+      ...userWithoutPassword,
+      token: generateToken(user.id)
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get user profile
+app.get('/api/users/profile', protect, (req, res) => {
+  res.json(req.user);
+});
+
+// Routes
+app.use('/api/users', userRoutes);
+
+// Basic route
+app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+
+// Start server
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+}); 
