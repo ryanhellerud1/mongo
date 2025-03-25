@@ -2,6 +2,12 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "description": "React frontend for MERN stack application",
+  "author": "Ryan Hellerud",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryanhellerud1/mongo.git"
+  },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.4.0",
     "@testing-library/jest-dom": "^5.16.5",
