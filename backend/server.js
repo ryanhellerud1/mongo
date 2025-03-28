@@ -2,9 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-
-// Routes
 const userRoutes = require('./routes/userRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const productRoutes = require('./routes/productRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const cmsRoutes = require('./routes/cmsRoutes');
 
 // Config
 dotenv.config();
@@ -21,6 +23,10 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Routes
 app.use('/api/users', userRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/cms', cmsRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

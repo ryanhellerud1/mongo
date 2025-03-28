@@ -13,7 +13,7 @@ const generateToken = (id) => {
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, isAdmin } = req.body;
     
     console.log('Registration attempt for:', email);
 
@@ -29,6 +29,7 @@ const registerUser = async (req, res) => {
       name,
       email,
       password,
+      isAdmin: isAdmin || false, // Set isAdmin if provided, otherwise default to false
     });
 
     if (user) {
@@ -37,6 +38,7 @@ const registerUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        isAdmin: user.isAdmin,
         token: generateToken(user._id),
       });
     } else {
@@ -74,6 +76,7 @@ const loginUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        isAdmin: user.isAdmin,
         token: generateToken(user._id),
       });
     } else {

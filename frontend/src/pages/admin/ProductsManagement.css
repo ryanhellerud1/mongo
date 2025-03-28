@@ -1,0 +1,250 @@
+.products-management {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.management-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-filter {
+  display: flex;
+  gap: 15px;
+}
+
+.search-box input {
+  width: 300px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.filter-box select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 150px;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-weight: bold;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+}
+
+.batch-actions {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.batch-actions span {
+  margin-right: 20px;
+  font-weight: bold;
+}
+
+.btn-success, .btn-warning, .btn-danger, .btn-edit, .btn-variant {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+}
+
+.btn-success {
+  background-color: #2ecc71;
+}
+
+.btn-warning {
+  background-color: #f39c12;
+}
+
+.btn-danger {
+  background-color: #e74c3c;
+}
+
+.btn-edit {
+  background-color: #3498db;
+}
+
+.btn-variant {
+  background-color: #9b59b6;
+}
+
+.btn-success:hover {
+  background-color: #27ae60;
+}
+
+.btn-warning:hover {
+  background-color: #e67e22;
+}
+
+.btn-danger:hover {
+  background-color: #c0392b;
+}
+
+.btn-edit:hover {
+  background-color: #2980b9;
+}
+
+.btn-variant:hover {
+  background-color: #8e44ad;
+}
+
+.products-table-container {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.products-table th, .products-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.products-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.products-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.sortable {
+  cursor: pointer;
+}
+
+.sortable:hover {
+  background-color: #eaeaea;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.status-active {
+  background-color: #d5f5e3;
+  color: #196f3d;
+}
+
+.status-inactive {
+  background-color: #f9e79f;
+  color: #7d6608;
+}
+
+.status-deleted {
+  background-color: #f5b7b1;
+  color: #922b21;
+}
+
+.out-of-stock {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.low-stock {
+  color: #f39c12;
+  font-weight: bold;
+}
+
+.loading, .error {
+  padding: 20px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.error {
+  color: #e74c3c;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0 10px;
+}
+
+.pagination-button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 14px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .management-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .search-filter {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .search-box input {
+    width: 100%;
+  }
+  
+  .filter-box select {
+    width: 100%;
+  }
+  
+  .action-buttons {
+    display: flex;
+    justify-content: flex-start;
+  }
+} 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { useUser } from '../context/UserContext';
 
 const Login = () => {
@@ -21,17 +21,7 @@ const Login = () => {
       
       console.log('Sending login request...');
       
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      };
-
-      const { data } = await axios.post(
-        'http://localhost:5001/api/users/login',
-        { email, password },
-        config
-      );
+      const { data } = await api.post('/users/login', { email, password });
 
       console.log('Login successful:', data);
       login(data);

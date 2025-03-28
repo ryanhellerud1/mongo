@@ -1,0 +1,187 @@
+.dashboard-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-loading,
+.dashboard-error {
+  padding: 20px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.dashboard-error {
+  color: #e74c3c;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.dashboard-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+}
+
+.card-content {
+  padding: 20px;
+  width: 100%;
+}
+
+.card-value {
+  font-size: 36px;
+  font-weight: bold;
+  margin: 15px 0;
+}
+
+.card-action {
+  margin-top: 15px;
+}
+
+.card-action a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.card-action a:hover {
+  text-decoration: underline;
+}
+
+/* Orders Card */
+.orders-card {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.orders-table,
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.orders-table th,
+.orders-table td,
+.stock-table th,
+.stock-table td {
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.orders-table th,
+.stock-table th {
+  font-weight: bold;
+  color: #555;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.status-pending {
+  background-color: #f9e79f;
+  color: #7d6608;
+}
+
+.status-processing {
+  background-color: #aed6f1;
+  color: #1a5276;
+}
+
+.status-shipped {
+  background-color: #d5f5e3;
+  color: #196f3d;
+}
+
+.status-delivered {
+  background-color: #a9dfbf;
+  color: #145a32;
+}
+
+.status-cancelled {
+  background-color: #f5b7b1;
+  color: #922b21;
+}
+
+/* Stock Card */
+.stock-card {
+  grid-column: span 2;
+}
+
+.critical-stock {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.low-stock {
+  color: #f39c12;
+  font-weight: bold;
+}
+
+/* Status Card */
+.status-card {
+  grid-column: span 2;
+}
+
+.status-overview {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.status-item {
+  text-align: center;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  min-width: 80px;
+}
+
+.status-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #7f8c8d;
+  margin-bottom: 5px;
+}
+
+.status-value {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+@media (max-width: 992px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .orders-card,
+  .stock-card,
+  .status-card {
+    grid-column: span 1;
+  }
+} 

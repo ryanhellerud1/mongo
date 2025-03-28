@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { useUser } from '../context/UserContext';
 
 const Register = () => {
@@ -28,17 +28,7 @@ const Register = () => {
       
       console.log('Sending registration request...');
       
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      };
-
-      const { data } = await axios.post(
-        'http://localhost:5001/api/users',
-        { name, email, password },
-        config
-      );
+      const { data } = await api.post('/users', { name, email, password });
 
       console.log('Registration successful:', data);
       login(data);
