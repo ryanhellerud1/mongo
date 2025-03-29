@@ -82,4 +82,7 @@ JWT_SECRET=your_jwt_secret
 
 <img width="1778" alt="image" src="https://github.com/user-attachments/assets/8946ac09-f025-4cc7-af00-34310838fe0a" />
 <img width="1705" alt="image" src="https://github.com/user-attachments/assets/6b8ab124-220f-4859-accb-df01454ece0b" />
+<img width="1739" alt="image" src="https://github.com/user-attachments/assets/a5c2ddc2-18b8-4bb2-97a3-78f214a384af" />
+<img width="1547" alt="image" src="https://github.com/user-attachments/assets/57eb12bb-7512-4a50-a72e-3e19a039c53c" />
+
 
