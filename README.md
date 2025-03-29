@@ -78,4 +78,8 @@ JWT_SECRET=your_jwt_secret
 ## Technologies Used
 
 - **Backend**: Node.js, Express, MongoDB, Mongoose, JWT
-- **Frontend**: React, React Router, Bootstrap, Axios 
+- **Frontend**: React, React Router, Bootstrap, Axios
+
+<img width="1778" alt="image" src="https://github.com/user-attachments/assets/8946ac09-f025-4cc7-af00-34310838fe0a" />
+<img width="1705" alt="image" src="https://github.com/user-attachments/assets/6b8ab124-220f-4859-accb-df01454ece0b" />
+
