@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 import './AdminLayout.css';
@@ -9,9 +9,13 @@ const AdminLayout = ({ children }) => {
   const { logout, userInfo } = useUser();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+  // Optimize the toggling function with debounce to reduce resize events
+  const toggleSidebar = useCallback(() => {
+    // Using setTimeout to ensure we don't trigger too many resize events
+    setTimeout(() => {
+      setSidebarOpen(prevState => !prevState);
+    }, 0);
+  }, []);
   
   const handleLogout = () => {
     logout();

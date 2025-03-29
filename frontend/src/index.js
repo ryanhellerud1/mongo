@@ -4,6 +4,10 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { suppressResizeObserverError } from './utils/suppressResizeObserverError';
+
+// Suppress ResizeObserver errors
+suppressResizeObserverError();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

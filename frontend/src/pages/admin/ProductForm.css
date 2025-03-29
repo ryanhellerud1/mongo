@@ -217,4 +217,69 @@ button:disabled {
   .image-inputs {
     grid-template-columns: 1fr;
   }
+}
+
+.image-upload-container {
+  margin-bottom: 20px;
+  position: relative;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.image-upload-container:hover {
+  border-color: #3498db;
+  background-color: #f8f9fa;
+}
+
+.image-upload-label {
+  display: block;
+  cursor: pointer;
+  font-weight: bold;
+  color: #3498db;
+  font-size: 16px;
+}
+
+.image-upload-label i {
+  font-size: 24px;
+  margin-right: 8px;
+}
+
+.image-upload-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.upload-progress {
+  margin-top: 15px;
+}
+
+.progress {
+  height: 10px;
+  border-radius: 5px;
+  background-color: #ecf0f1;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #3498db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s ease;
+  font-size: 10px;
+  color: white;
+}
+
+.mb-3 {
+  margin-bottom: 1rem;
 } 

@@ -7,6 +7,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [renderComplete, setRenderComplete] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -20,6 +21,10 @@ const Dashboard = () => {
         console.error('Dashboard error:', err);
       } finally {
         setLoading(false);
+        // Delay the full render to avoid ResizeObserver issues
+        setTimeout(() => {
+          setRenderComplete(true);
+        }, 100);
       }
     };
 
@@ -38,7 +43,7 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <h1>Admin Dashboard</h1>
       
-      {stats && (
+      {stats && renderComplete && (
         <div className="dashboard-grid">
           {/* Summary Cards */}
           <div className="dashboard-card summary-card">

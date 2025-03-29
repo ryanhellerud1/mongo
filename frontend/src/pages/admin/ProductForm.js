@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCategoriesForSelect } from '../../services/adminService';
+import { uploadImage, uploadMultipleImages } from '../../services/uploadService';
 import axios from 'axios';
 import './ProductForm.css';
 
-const API_URL = 'http://localhost:5001/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
 
 const ProductForm = () => {
   const { id } = useParams();
@@ -12,6 +13,8 @@ const ProductForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -94,7 +97,7 @@ const ProductForm = () => {
     if (newSpec.title && newSpec.value) {
       setFormData({
         ...formData,
-        specifications: [...formData.specifications, { ...newSpec }]
+        specifications: [...formData.specifications, { name: newSpec.title, value: newSpec.value }]
       });
       setNewSpec({ title: '', value: '' });
     }
@@ -127,6 +130,50 @@ const ProductForm = () => {
       ...formData,
       images: updatedImages
     });
+  };
+
+  // Handle image file upload
+  const handleImageUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    try {
+      setImageUploading(true);
+      setUploadProgress(0);
+      
+      // Create a fake progress indicator
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          const nextProgress = prev + Math.random() * 10;
+          return nextProgress >= 90 ? 90 : nextProgress;
+        });
+      }, 300);
+      
+      // Upload multiple images
+      const imageUrls = await uploadMultipleImages(files);
+      
+      // Update form data with new image URLs
+      setFormData({
+        ...formData,
+        images: [...formData.images, ...imageUrls]
+      });
+      
+      // Clear progress and stop interval
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      // Reset upload state after a delay
+      setTimeout(() => {
+        setImageUploading(false);
+        setUploadProgress(0);
+      }, 1000);
+      
+    } catch (err) {
+      console.error('Image upload error:', err);
+      setError('Failed to upload images. Please try again.');
+      setImageUploading(false);
+      setUploadProgress(0);
+    }
   };
 
   // Handle form submission
@@ -342,7 +389,7 @@ const ProductForm = () => {
                 <tbody>
                   {formData.specifications.map((spec, index) => (
                     <tr key={index}>
-                      <td>{spec.title}</td>
+                      <td>{spec.name}</td>
                       <td>{spec.value}</td>
                       <td>
                         <button 
@@ -364,6 +411,42 @@ const ProductForm = () => {
         {/* Images */}
         <div className="form-section">
           <h3>Product Images</h3>
+          
+          {/* Image File Upload */}
+          <div className="image-upload-container mb-3">
+            <label htmlFor="imageUpload" className="image-upload-label">
+              <i className="fas fa-cloud-upload-alt"></i> Upload Images
+            </label>
+            <input
+              type="file"
+              id="imageUpload"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              onChange={handleImageUpload}
+              className="image-upload-input"
+              disabled={imageUploading}
+            />
+            
+            {imageUploading && (
+              <div className="upload-progress">
+                <div className="progress">
+                  <div 
+                    className="progress-bar" 
+                    role="progressbar" 
+                    style={{ width: `${uploadProgress}%` }}
+                    aria-valuenow={uploadProgress} 
+                    aria-valuemin="0" 
+                    aria-valuemax="100"
+                  >
+                    {Math.round(uploadProgress)}%
+                  </div>
+                </div>
+                <p>Uploading images, please wait...</p>
+              </div>
+            )}
+          </div>
+          
+          {/* Manual URL Entry */}
           <div className="image-inputs">
             <input
               type="text"
@@ -409,7 +492,7 @@ const ProductForm = () => {
           <button 
             type="submit" 
             className="btn-save"
-            disabled={loading}
+            disabled={loading || imageUploading}
           >
             {loading ? 'Saving...' : (id ? 'Update Product' : 'Create Product')}
           </button>
