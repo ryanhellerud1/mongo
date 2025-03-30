@@ -27,10 +27,16 @@ api.interceptors.request.use(
 // Check authentication status - debugging helper
 export const checkAuthStatus = async () => {
   try {
+    // First check if the endpoint exists to avoid console errors
     const response = await api.get('/users/checkAuth');
     return { authenticated: true, user: response.data.user };
   } catch (error) {
-    console.error('Auth check failed:', error);
+    // If it's a 404, don't log as an error since the endpoint might not exist
+    if (error.response && error.response.status === 404) {
+      console.warn('Auth check endpoint not found - endpoint may not be set up on the server');
+    } else {
+      console.error('Auth check failed:', error);
+    }
     return { authenticated: false, error };
   }
 };

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getCategoriesForSelect } from '../../services/adminService';
 import { uploadImage, uploadMultipleImages } from '../../services/uploadService';
 import axios from 'axios';
+import api from '../../services/api';
 import './ProductForm.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
@@ -38,14 +39,14 @@ const ProductForm = () => {
       
       try {
         setLoading(true);
-        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-        const token = userInfo.token || '';
-        const response = await axios.get(`${API_URL}/products/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        // Use api instance which has withCredentials and proper headers set up
+        const productUrl = `/products/${id}`;
+        console.log('Fetching product from:', productUrl);
+        
+        const { data } = await api.get(productUrl);
         
         // Format data for form
-        const product = response.data;
+        const product = data;
         setFormData({
           name: product.name || '',
           description: product.description || '',

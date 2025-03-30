@@ -16,22 +16,28 @@ export const UserProvider = ({ children }) => {
           setUserInfo(JSON.parse(storedUserInfo));
         }
 
-        // Then, verify with the server using cookies
-        const { authenticated, user } = await checkAuthStatus();
-        if (authenticated) {
-          setUserInfo(prevInfo => {
-            // Merge with existing info if available, prioritizing server data
-            const newInfo = { ...JSON.parse(storedUserInfo || '{}'), ...user };
-            localStorage.setItem('userInfo', JSON.stringify(newInfo));
-            return newInfo;
-          });
-        } else if (storedUserInfo) {
-          // If server says not authenticated but we have localStorage data,
-          // keep the UI state but console log the issue
-          console.warn('Server reports unauthenticated but localStorage has user data');
+        // Try to verify with the server using cookies, but don't fail if the endpoint isn't available
+        try {
+          const { authenticated, user, error } = await checkAuthStatus();
+          
+          // Only update user info if we successfully authenticated
+          if (authenticated) {
+            setUserInfo(prevInfo => {
+              // Merge with existing info if available, prioritizing server data
+              const newInfo = { ...JSON.parse(storedUserInfo || '{}'), ...user };
+              localStorage.setItem('userInfo', JSON.stringify(newInfo));
+              return newInfo;
+            });
+          } else if (storedUserInfo && error?.response?.status !== 404) {
+            // Only log warning if it's not a 404 (which just means the endpoint doesn't exist)
+            console.warn('Server reports unauthenticated but localStorage has user data');
+          }
+        } catch (authError) {
+          // Silently continue if auth check fails - we'll use localStorage data
+          console.log('Auth verification unavailable:', authError);
         }
       } catch (error) {
-        console.error('Auth verification error:', error);
+        console.error('Auth context error:', error);
       } finally {
         setLoading(false);
       }
