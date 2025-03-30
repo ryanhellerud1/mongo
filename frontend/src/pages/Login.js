@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { useUser } from '../context/UserContext';
 
@@ -10,7 +10,22 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useUser();
+  const location = useLocation();
+  const { login, userInfo } = useUser();
+
+  // Get redirect URL from query params
+  const redirect = new URLSearchParams(location.search).get('redirect') || '/';
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (userInfo) {
+      if (userInfo.isAdmin && redirect === '/') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate(redirect);
+      }
+    }
+  }, [userInfo, navigate, redirect]);
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -21,13 +36,14 @@ const Login = () => {
       
       console.log('Sending login request...');
       
-      const { data } = await api.post('/users/login', { email, password });
+      const { data } = await api.post('/users/login', { email, password }, { withCredentials: true });
 
       console.log('Login successful:', data);
       login(data);
       
       setLoading(false);
-      navigate('/');
+      
+      // Navigation will happen in the useEffect above
     } catch (error) {
       console.error('Login error:', error);
       setMessage(

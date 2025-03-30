@@ -1,30 +1,26 @@
-const express = require('express');
+import express from 'express';
+import { protect, admin } from '../middleware/authMiddleware.js';
+import { getDashboardStats, getCmsProducts, getProductsForSelect, getCategoriesForSelect, batchUpdateProducts, getCmsOrders } from '../controllers/cmsController.js';
+
 const router = express.Router();
-const { 
-  getDashboardStats,
-  getCmsProducts,
-  getProductsForSelect,
-  getCategoriesForSelect,
-  batchUpdateProducts,
-  getCmsOrders
-} = require('../controllers/cmsController');
-const { protect, admin } = require('../middleware/authMiddleware');
 
-// All CMS routes require admin access
-router.use(protect, admin);
+// CMS routes
+router.get('/', (req, res) => {
+  res.json({ message: 'CMS API is working' });
+});
 
-// Dashboard
-router.get('/dashboard', getDashboardStats);
+// Dashboard stats route
+router.get('/dashboard', protect, admin, getDashboardStats);
 
-// Products
-router.get('/products', getCmsProducts);
-router.get('/products/select', getProductsForSelect);
-router.put('/products/batch', batchUpdateProducts);
+// Product routes
+router.get('/products', protect, admin, getCmsProducts);
+router.get('/products/select', protect, admin, getProductsForSelect);
+router.put('/products/batch', protect, admin, batchUpdateProducts);
 
-// Categories
-router.get('/categories/select', getCategoriesForSelect);
+// Category routes
+router.get('/categories/select', protect, admin, getCategoriesForSelect);
 
-// Orders
-router.get('/orders', getCmsOrders);
+// Order routes
+router.get('/orders', protect, admin, getCmsOrders);
 
-module.exports = router; 
+export default router; 

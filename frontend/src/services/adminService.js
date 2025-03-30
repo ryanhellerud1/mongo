@@ -2,15 +2,13 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5001/api/cms';
 
-// Create axios instance with auth token
+// Create axios instance with auth token and credentials
 const createAuthAxios = () => {
-  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-  const token = userInfo.token || '';
   return axios.create({
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    }
+    },
+    withCredentials: true, // This will include cookies in the request
   });
 };
 
