@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getDashboardStats } from '../../services/adminService';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useUser } from '../../context/UserContext';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -8,8 +9,21 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [renderComplete, setRenderComplete] = useState(false);
+  const { userInfo } = useUser();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // Check if user is logged in and is an admin
+    if (!userInfo) {
+      navigate('/login?redirect=/admin/dashboard');
+      return;
+    }
+
+    if (!userInfo.isAdmin) {
+      setError('You do not have permission to access this page.');
+      return;
+    }
+
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
@@ -17,7 +31,12 @@ const Dashboard = () => {
         setStats(data);
         setError(null);
       } catch (err) {
-        setError('Failed to load dashboard data. Please try again.');
+        if (err.response && err.response.status === 401) {
+          setError('Your session has expired. Please log in again.');
+          navigate('/login?redirect=/admin/dashboard');
+        } else {
+          setError('Failed to load dashboard data. Please try again.');
+        }
         console.error('Dashboard error:', err);
       } finally {
         setLoading(false);
@@ -29,7 +48,7 @@ const Dashboard = () => {
     };
 
     fetchDashboardData();
-  }, []);
+  }, [userInfo, navigate]);
 
   if (loading) {
     return <div className="dashboard-loading">Loading dashboard data...</div>;

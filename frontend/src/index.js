@@ -1,9 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { Provider } from 'react-redux';
+import store from './store';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { suppressResizeObserverError } from './utils/suppressResizeObserverError';
 
 // Suppress ResizeObserver errors
@@ -12,7 +16,10 @@ suppressResizeObserverError();
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}>
+      <App />
+      <ToastContainer position="top-right" autoClose={3000} />
+    </Provider>
   </React.StrictMode>
 );
 

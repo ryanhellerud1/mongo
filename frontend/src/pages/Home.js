@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import ProductCard from '../components/ProductCard';
+import API from '../utils/api';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
@@ -15,18 +15,14 @@ const Home = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        let url = `${process.env.REACT_APP_API_URL || 'http://localhost:5001/api'}/products`;
         
         // Add query parameters if needed
         const params = new URLSearchParams();
         if (selectedCategory) params.append('category', selectedCategory);
         if (searchTerm) params.append('search', searchTerm);
         
-        if (params.toString()) {
-          url += `?${params.toString()}`;
-        }
-        
-        const { data } = await axios.get(url);
+        const url = `/products${params.toString() ? `?${params.toString()}` : ''}`;
+        const { data } = await API.get(url);
         setProducts(data.products || data);
         setError(null);
       } catch (err) {
@@ -39,7 +35,7 @@ const Home = () => {
 
     const fetchCategories = async () => {
       try {
-        const { data } = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5001/api'}/categories`);
+        const { data } = await API.get('/categories');
         setCategories(data);
       } catch (err) {
         console.error('Error fetching categories:', err);
