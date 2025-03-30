@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useUser } from '../context/UserContext';
+import { useCart } from '../context/CartContext';
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { userInfo } = useUser();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,7 +22,7 @@ const ProductDetail = () => {
       try {
         setLoading(true);
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:5001/api'}/products/${id}`
+          `${process.env.REACT_APP_API_URL || 'http://localhost:5001'}/api/products/${id}`
         );
         setProduct(data);
         
@@ -40,7 +43,7 @@ const ProductDetail = () => {
     const fetchRelatedProducts = async () => {
       try {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:5001/api'}/products?limit=4`
+          `${process.env.REACT_APP_API_URL || 'http://localhost:5001'}/api/products?limit=4`
         );
         setRelatedProducts(data.products || data || []);
       } catch (err) {
@@ -75,9 +78,9 @@ const ProductDetail = () => {
     setSelectedVariant(variant);
   };
 
-  const addToCart = () => {
-    // Placeholder for cart functionality
-    alert(`Added ${quantity} of ${product.name} to cart!`);
+  const handleAddToCart = () => {
+    addToCart(product, quantity, selectedVariant);
+    navigate('/cart');
   };
 
   if (loading) {
@@ -102,6 +105,15 @@ const ProductDetail = () => {
   const discountPercentage = product.compareAtPrice && product.price 
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100) 
     : null;
+
+  // Calculate current stock - use variant stock if selected, otherwise product stock
+  const currentStock = selectedVariant ? 
+    (selectedVariant.countInStock !== undefined ? selectedVariant.countInStock : product.countInStock) : 
+    product.countInStock;
+
+  // Calculate current price - use variant price if selected, otherwise product price
+  const currentPrice = selectedVariant && selectedVariant.price !== undefined ? 
+    selectedVariant.price : product.price;
 
   return (
     <div className="product-detail-container">
@@ -188,8 +200,8 @@ const ProductDetail = () => {
           {/* Price */}
           <div className="mb-3">
             <div className="d-flex align-items-center">
-              <h3 className="me-3 mb-0">${product.price.toFixed(2)}</h3>
-              {product.compareAtPrice && product.compareAtPrice > product.price && (
+              <h3 className="me-3 mb-0">${currentPrice.toFixed(2)}</h3>
+              {product.compareAtPrice && product.compareAtPrice > currentPrice && (
                 <span className="text-muted text-decoration-line-through fs-5">
                   ${product.compareAtPrice.toFixed(2)}
                 </span>
@@ -202,9 +214,9 @@ const ProductDetail = () => {
           
           {/* Stock Status */}
           <div className="mb-3">
-            {product.countInStock > 0 ? (
+            {currentStock > 0 ? (
               <div className="text-success">
-                <i className="fas fa-check-circle me-1"></i> In Stock ({product.countInStock} available)
+                <i className="fas fa-check-circle me-1"></i> In Stock ({currentStock} available)
               </div>
             ) : (
               <div className="text-danger">
@@ -242,7 +254,12 @@ const ProductDetail = () => {
           <div className="mb-4">
             <h5>Quantity</h5>
             <div className="input-group" style={{ width: '150px' }}>
-              <button className="btn btn-outline-secondary" type="button" onClick={decrementQuantity}>
+              <button 
+                className="btn btn-outline-secondary" 
+                type="button" 
+                onClick={decrementQuantity}
+                disabled={currentStock <= 0}
+              >
                 <i className="fas fa-minus"></i>
               </button>
               <input 
@@ -251,9 +268,15 @@ const ProductDetail = () => {
                 value={quantity} 
                 onChange={handleQuantityChange}
                 min="1"
-                max={product.countInStock || 10}
+                max={currentStock}
+                disabled={currentStock <= 0}
               />
-              <button className="btn btn-outline-secondary" type="button" onClick={incrementQuantity}>
+              <button 
+                className="btn btn-outline-secondary" 
+                type="button" 
+                onClick={incrementQuantity}
+                disabled={currentStock <= 0}
+              >
                 <i className="fas fa-plus"></i>
               </button>
             </div>
@@ -263,11 +286,11 @@ const ProductDetail = () => {
           <div className="d-grid gap-2 mb-4">
             <button 
               className="btn btn-primary btn-lg"
-              onClick={addToCart}
-              disabled={product.countInStock <= 0}
+              onClick={handleAddToCart}
+              disabled={currentStock <= 0}
             >
               <i className="fas fa-shopping-cart me-2"></i>
-              {product.countInStock > 0 ? 'Add to Cart' : 'Out of Stock'}
+              {currentStock > 0 ? 'Add to Cart' : 'Out of Stock'}
             </button>
           </div>
           
