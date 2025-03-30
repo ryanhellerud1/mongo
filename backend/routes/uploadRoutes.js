@@ -1,6 +1,6 @@
-const express = require('express');
-const { protect, admin } = require('../middleware/authMiddleware');
-const { upload, uploadImage } = require('../controllers/uploadController');
+import express from 'express';
+import { protect, admin } from '../middleware/authMiddleware.js';
+import { upload, uploadImage } from '../controllers/uploadController.js';
 
 const router = express.Router();
 
@@ -8,4 +8,4 @@ const router = express.Router();
 // The 'single' middleware handles a single file with field name 'image'
 router.post('/', protect, admin, upload.single('image'), uploadImage);
 
-module.exports = router; 
+export default router; 

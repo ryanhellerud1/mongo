@@ -1,39 +1,32 @@
-const express = require('express');
-const router = express.Router();
-const { 
-  getProducts, 
-  getProductById, 
-  getProductBySlug,
-  createProduct, 
-  updateProduct, 
+import express from 'express';
+import {
+  getProducts,
+  getProductById,
+  createProduct,
+  updateProduct,
   deleteProduct,
-  getTopProducts,
-  getFeaturedProducts,
-  getProductCount,
   createProductReview,
-  getProductsByCategory
-} = require('../controllers/productController');
-const { protect, admin } = require('../middleware/authMiddleware');
+  getTopProducts,
+} from '../controllers/productController.js';
+import { protect, admin } from '../middleware/authMiddleware.js';
 
-// Special routes must be defined before generic routes to avoid conflicts
-router.get('/top', getTopProducts);
-router.get('/featured', getFeaturedProducts);
-router.get('/count', protect, admin, getProductCount);
-router.get('/category/:categoryId', getProductsByCategory);
-router.get('/slug/:slug', getProductBySlug);
+const router = express.Router();
 
-// CRUD routes
+// Get all products and create new product
 router.route('/')
   .get(getProducts)
   .post(protect, admin, createProduct);
 
+// Get top rated products
+router.get('/top', getTopProducts);
+
+// Get, update, and delete specific product
 router.route('/:id')
   .get(getProductById)
   .put(protect, admin, updateProduct)
   .delete(protect, admin, deleteProduct);
 
-// Reviews
-router.route('/:id/reviews')
-  .post(protect, createProductReview);
+// Product reviews
+router.post('/:id/reviews', protect, createProductReview);
 
-module.exports = router; 
+export default router; 

@@ -1,7 +1,7 @@
-const Product = require('../models/productModel');
-const Category = require('../models/categoryModel');
-const Order = require('../models/orderModel');
-const User = require('../models/userModel');
+import Product from '../models/productModel.js';
+import Category from '../models/categoryModel.js';
+import Order from '../models/orderModel.js';
+import User from '../models/userModel.js';
 
 // @desc    Get dashboard statistics
 // @route   GET /api/cms/dashboard
@@ -244,7 +244,7 @@ const getCmsOrders = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   getDashboardStats,
   getCmsProducts,
   getProductsForSelect,

@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const slugify = require('slugify');
+import mongoose from 'mongoose';
 
 const reviewSchema = mongoose.Schema(
   {
@@ -28,89 +27,86 @@ const reviewSchema = mongoose.Schema(
   }
 );
 
+const productVariantSchema = mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  countInStock: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  sku: {
+    type: String,
+  },
+});
+
 const productSchema = mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User',
+    },
     name: {
       type: String,
       required: true,
-      trim: true,
     },
-    slug: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+    images: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
     description: {
       type: String,
       required: true,
     },
-    richDescription: {
-      type: String,
-      default: '',
-    },
+    variants: [productVariantSchema],
     brand: {
       type: String,
-      default: '',
-    },
-    price: {
-      type: Number,
-      required: true,
-      default: 0,
     },
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
       required: true,
     },
-    countInStock: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 0,
-    },
-    sold: {
-      type: Number,
-      default: 0,
-    },
+    reviews: [reviewSchema],
     rating: {
       type: Number,
+      required: true,
       default: 0,
     },
     numReviews: {
       type: Number,
+      required: true,
+      default: 0,
+    },
+    price: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    countInStock: {
+      type: Number,
+      required: true,
       default: 0,
     },
     isFeatured: {
       type: Boolean,
       default: false,
     },
-    reviews: [reviewSchema],
-    images: [
-      {
-        type: String,
-      },
-    ],
-    status: {
+    slug: {
       type: String,
       required: true,
-      enum: ['active', 'inactive', 'deleted'],
-      default: 'active',
+      unique: true,
     },
-    variants: [
-      {
-        name: { type: String },
-        price: { type: Number },
-        countInStock: { type: Number },
-        attributes: [{
-          name: { type: String },
-          value: { type: String }
-        }]
-      }
-    ],
-    specifications: [{
-      title: { type: String },
-      value: { type: String }
-    }],
   },
   {
     timestamps: true,
@@ -145,4 +141,4 @@ productSchema.methods.updateRatingStats = function () {
 
 const Product = mongoose.model('Product', productSchema);
 
-module.exports = Product; 
+export default Product; 

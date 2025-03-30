@@ -1,41 +1,44 @@
-const express = require('express');
-const router = express.Router();
-const {
+import express from 'express';
+import { 
   createOrder,
-  getOrderById,
-  updateOrderToPaid,
+  getOrderById, 
+  updateOrderToPaid, 
   updateOrderToDelivered,
   getMyOrders,
-  getOrders,
-  updateOrderStatus,
-  getOrderStats,
-  cancelOrder,
-} = require('../controllers/orderController');
-const { protect, admin } = require('../middleware/authMiddleware');
+  getOrders
+} from '../controllers/orderController.js';
+import { protect, admin } from '../middleware/authMiddleware.js';
 
-// Special routes must be defined before generic routes to avoid conflicts
-router.route('/myorders').get(protect, getMyOrders);
-router.route('/stats').get(protect, admin, getOrderStats);
+const router = express.Router();
 
-// Main routes
-router.route('/')
-  .post(protect, createOrder)
-  .get(protect, admin, getOrders);
+// @route   POST /api/orders
+// @desc    Create a new order
+// @access  Private
+router.post('/', protect, createOrder);
 
-router.route('/:id')
-  .get(protect, getOrderById);
+// @route   GET /api/orders/myorders
+// @desc    Get logged in user's orders
+// @access  Private
+router.get('/myorders', protect, getMyOrders);
 
-// Order status update routes
-router.route('/:id/pay')
-  .put(protect, updateOrderToPaid);
+// @route   GET /api/orders/:id
+// @desc    Get order by ID
+// @access  Private
+router.get('/:id', protect, getOrderById);
 
-router.route('/:id/deliver')
-  .put(protect, admin, updateOrderToDelivered);
+// @route   PUT /api/orders/:id/pay
+// @desc    Update order to paid
+// @access  Private
+router.put('/:id/pay', protect, updateOrderToPaid);
 
-router.route('/:id/status')
-  .put(protect, admin, updateOrderStatus);
+// @route   PUT /api/orders/:id/deliver
+// @desc    Update order to delivered
+// @access  Private/Admin
+router.put('/:id/deliver', protect, admin, updateOrderToDelivered);
 
-router.route('/:id/cancel')
-  .put(protect, cancelOrder);
+// @route   GET /api/orders
+// @desc    Get all orders
+// @access  Private/Admin
+router.get('/', protect, admin, getOrders);
 
-module.exports = router; 
+export default router; 

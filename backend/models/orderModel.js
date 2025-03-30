@@ -1,68 +1,4 @@
-const mongoose = require('mongoose');
-
-const orderItemSchema = mongoose.Schema({
-  product: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: true,
-  },
-  name: {
-    type: String,
-    required: true,
-  },
-  image: {
-    type: String,
-    required: true,
-  },
-  quantity: {
-    type: Number,
-    required: true,
-    min: 1,
-  },
-  price: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  variant: {
-    type: Object,
-    default: null,
-  },
-});
-
-const shippingAddressSchema = mongoose.Schema({
-  fullName: {
-    type: String,
-    required: true,
-  },
-  address: {
-    type: String,
-    required: true,
-  },
-  city: {
-    type: String,
-    required: true,
-  },
-  postalCode: {
-    type: String,
-    required: true,
-  },
-  country: {
-    type: String,
-    required: true,
-  },
-  phone: {
-    type: String,
-    required: true,
-  },
-});
-
-const paymentResultSchema = mongoose.Schema({
-  id: { type: String },
-  status: { type: String },
-  update_time: { type: String },
-  email_address: { type: String },
-});
+import mongoose from 'mongoose';
 
 const orderSchema = mongoose.Schema(
   {
@@ -71,24 +7,48 @@ const orderSchema = mongoose.Schema(
       required: true,
       ref: 'User',
     },
-    orderItems: [orderItemSchema],
-    shippingAddress: shippingAddressSchema,
+    orderItems: [
+      {
+        name: { type: String, required: true },
+        qty: { type: Number, required: true },
+        image: { type: String, required: true },
+        price: { type: Number, required: true },
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          ref: 'Product',
+        },
+      },
+    ],
+    shippingAddress: {
+      address: { type: String, required: true },
+      city: { type: String, required: true },
+      postalCode: { type: String, required: true },
+      country: { type: String, required: true },
+      fullName: { type: String, required: true },
+      phone: { type: String, required: true },
+    },
     paymentMethod: {
       type: String,
       required: true,
     },
-    paymentResult: paymentResultSchema,
+    paymentResult: {
+      id: { type: String },
+      status: { type: String },
+      update_time: { type: String },
+      email_address: { type: String },
+    },
     itemsPrice: {
       type: Number,
       required: true,
       default: 0.0,
     },
-    shippingPrice: {
+    taxPrice: {
       type: Number,
       required: true,
       default: 0.0,
     },
-    taxPrice: {
+    shippingPrice: {
       type: Number,
       required: true,
       default: 0.0,
@@ -122,11 +82,6 @@ const orderSchema = mongoose.Schema(
     },
     trackingNumber: {
       type: String,
-      default: null,
-    },
-    notes: {
-      type: String,
-      default: null,
     },
   },
   {
@@ -144,7 +99,7 @@ orderSchema.pre('save', function (next) {
   if (this.isModified('orderItems') || this.isNew) {
     // Calculate itemsPrice
     this.itemsPrice = this.orderItems.reduce(
-      (acc, item) => acc + item.price * item.quantity,
+      (acc, item) => acc + item.price * item.qty,
       0
     ).toFixed(2);
     
@@ -160,4 +115,4 @@ orderSchema.pre('save', function (next) {
 
 const Order = mongoose.model('Order', orderSchema);
 
-module.exports = Order; 
+export default Order; 

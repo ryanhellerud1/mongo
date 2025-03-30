@@ -1,28 +1,28 @@
-const express = require('express');
-const {
+import express from 'express';
+import { 
   getCategories,
-  getCategoryTree,
-  getCategory,
+  getCategoryById,
   createCategory,
   updateCategory,
-  deleteCategory,
-  getCategoryChildren,
-  getCategoryAncestors,
-} = require('../controllers/categoryController');
-const { protect, admin } = require('../middleware/authMiddleware');
+  deleteCategory
+} from '../controllers/categoryController.js';
+import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Public routes
+// Get all categories (public)
 router.get('/', getCategories);
-router.get('/tree', getCategoryTree);
-router.get('/:id', getCategory);
-router.get('/:id/children', getCategoryChildren);
-router.get('/:id/ancestors', getCategoryAncestors);
 
-// Protected admin routes
+// Get single category by id (public)
+router.get('/:id', getCategoryById);
+
+// Create category (admin only)
 router.post('/', protect, admin, createCategory);
+
+// Update category (admin only)
 router.put('/:id', protect, admin, updateCategory);
+
+// Delete category (admin only)
 router.delete('/:id', protect, admin, deleteCategory);
 
-module.exports = router; 
+export default router; 

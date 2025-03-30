@@ -1,245 +1,140 @@
-const Order = require('../models/orderModel');
-const Product = require('../models/productModel');
+import asyncHandler from '../middleware/asyncHandler.js';
+import Order from '../models/orderModel.js';
+import Product from '../models/productModel.js';
 
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private
-const createOrder = async (req, res) => {
-  try {
-    const {
-      orderItems,
-      shippingAddress,
-      paymentMethod,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalPrice,
-    } = req.body;
+const createOrder = asyncHandler(async (req, res) => {
+  const { 
+    orderItems, 
+    shippingAddress, 
+    paymentMethod, 
+    itemsPrice, 
+    taxPrice, 
+    shippingPrice, 
+    totalPrice 
+  } = req.body;
 
-    if (orderItems && orderItems.length === 0) {
-      return res.status(400).json({ message: 'No order items' });
-    }
-
-    // Verify product availability and prices
-    for (const item of orderItems) {
-      const product = await Product.findById(item.product);
-      if (!product) {
-        return res.status(404).json({
-          message: `Product not found: ${item.name}`,
-        });
-      }
-
-      // Check if item is in stock
-      if (product.countInStock < item.quantity) {
-        return res.status(400).json({
-          message: `Not enough ${product.name} in stock. Available: ${product.countInStock}`,
-        });
-      }
-
-      // Verify price
-      if (product.price !== item.price) {
-        return res.status(400).json({
-          message: `Price mismatch for ${product.name}. Expected: ${product.price}`,
-        });
-      }
-    }
-
-    const order = await Order.create({
+  if (orderItems && orderItems.length === 0) {
+    res.status(400);
+    throw new Error('No order items');
+  } else {
+    // Create order in database
+    const order = new Order({
+      orderItems: orderItems.map(item => ({
+        ...item,
+        product: item.product, // This is the product ID
+        _id: undefined
+      })),
       user: req.user._id,
-      orderItems,
       shippingAddress,
       paymentMethod,
       itemsPrice,
       taxPrice,
       shippingPrice,
-      totalPrice,
+      totalPrice
     });
 
     // Update product stock
     for (const item of orderItems) {
       const product = await Product.findById(item.product);
-      product.countInStock -= item.quantity;
-      product.sold = (product.sold || 0) + item.quantity;
-      await product.save();
+      if (product) {
+        product.countInStock -= item.qty;
+        await product.save();
+      }
     }
 
-    res.status(201).json(order);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    const createdOrder = await order.save();
+
+    res.status(201).json(createdOrder);
   }
-};
+});
 
 // @desc    Get order by ID
 // @route   GET /api/orders/:id
 // @access  Private
-const getOrderById = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id)
-      .populate('user', 'name email')
-      .populate({
-        path: 'orderItems.product',
-        select: 'name slug category',
-        populate: { path: 'category', select: 'name slug' }
-      });
+const getOrderById = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id).populate('user', 'name email');
 
-    // Check if order exists
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+  if (order) {
+    // Check if the user is authorized to view this order
+    if (order.user._id.toString() === req.user._id.toString() || req.user.isAdmin) {
+      res.json(order);
+    } else {
+      res.status(403);
+      throw new Error('Not authorized to view this order');
     }
-
-    // Make sure the user is the owner or an admin
-    if (order.user._id.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-      return res.status(401).json({ message: 'Not authorized' });
-    }
-
-    res.json(order);
-  } catch (error) {
-    if (error.kind === 'ObjectId') {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } else {
+    res.status(404);
+    throw new Error('Order not found');
   }
-};
+});
 
 // @desc    Update order to paid
 // @route   PUT /api/orders/:id/pay
 // @access  Private
-const updateOrderToPaid = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
+const updateOrderToPaid = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
 
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+  if (order) {
+    // Check if the user is authorized
+    if (order.user.toString() === req.user._id.toString() || req.user.isAdmin) {
+      // Update order status
+      order.isPaid = true;
+      order.paidAt = Date.now();
+      order.paymentResult = {
+        id: req.body.id,
+        status: req.body.status,
+        update_time: req.body.update_time,
+        email_address: req.body.payer.email_address,
+      };
+
+      const updatedOrder = await order.save();
+      res.json(updatedOrder);
+    } else {
+      res.status(403);
+      throw new Error('Not authorized to update this order');
     }
-
-    // Check if user is authorized to update this order
-    if (order.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-      return res.status(401).json({ message: 'Not authorized' });
-    }
-
-    // Check if order is already paid
-    if (order.isPaid) {
-      return res.status(400).json({ message: 'Order already paid' });
-    }
-
-    order.isPaid = true;
-    order.paidAt = Date.now();
-    order.paymentResult = {
-      id: req.body.id,
-      status: req.body.status,
-      update_time: req.body.update_time,
-      email_address: req.body.email_address,
-    };
-    
-    // Update order status
-    order.status = 'processing';
-
-    const updatedOrder = await order.save();
-    res.json(updatedOrder);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } else {
+    res.status(404);
+    throw new Error('Order not found');
   }
-};
+});
 
 // @desc    Update order to delivered
 // @route   PUT /api/orders/:id/deliver
 // @access  Private/Admin
-const updateOrderToDelivered = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
+const updateOrderToDelivered = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
 
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    // Check if order is already delivered
-    if (order.isDelivered) {
-      return res.status(400).json({ message: 'Order already delivered' });
-    }
-
-    // Make sure order is paid before delivery
-    if (!order.isPaid) {
-      return res.status(400).json({ message: 'Order not paid yet' });
-    }
-
+  if (order) {
     order.isDelivered = true;
     order.deliveredAt = Date.now();
-    order.status = 'delivered';
-    
-    if (req.body.trackingNumber) {
-      order.trackingNumber = req.body.trackingNumber;
-    }
 
     const updatedOrder = await order.save();
     res.json(updatedOrder);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } else {
+    res.status(404);
+    throw new Error('Order not found');
   }
-};
+});
 
-// @desc    Get logged in user orders
+// @desc    Get logged in user's orders
 // @route   GET /api/orders/myorders
 // @access  Private
-const getMyOrders = async (req, res) => {
-  try {
-    const orders = await Order.find({ user: req.user._id })
-      .sort('-createdAt'); // Sort by most recent first
-    res.json(orders);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-};
+const getMyOrders = asyncHandler(async (req, res) => {
+  const orders = await Order.find({ user: req.user._id });
+  res.json(orders);
+});
 
 // @desc    Get all orders
 // @route   GET /api/orders
 // @access  Private/Admin
-const getOrders = async (req, res) => {
-  try {
-    const { 
-      limit = 10, 
-      page = 1,
-      status,
-      user,
-      sort = 'createdAt',
-      order = 'desc'
-    } = req.query;
-    
-    const skip = (page - 1) * limit;
-    
-    // Build query
-    const query = {};
-    
-    if (status) {
-      query.status = status;
-    }
-    
-    if (user) {
-      query.user = user;
-    }
-    
-    // Build sort
-    const sortOptions = {};
-    sortOptions[sort] = order === 'asc' ? 1 : -1;
-    
-    const orders = await Order.find(query)
-      .populate('user', 'id name email')
-      .sort(sortOptions)
-      .skip(skip)
-      .limit(Number(limit));
-    
-    // Get total
-    const total = await Order.countDocuments(query);
-    
-    res.json({
-      orders,
-      page: Number(page),
-      pages: Math.ceil(total / limit),
-      total,
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-};
+const getOrders = asyncHandler(async (req, res) => {
+  const orders = await Order.find({}).populate('user', 'id name');
+  res.json(orders);
+});
 
 // @desc    Update order status
 // @route   PUT /api/orders/:id/status
@@ -385,7 +280,7 @@ const cancelOrder = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   createOrder,
   getOrderById,
   updateOrderToPaid,
