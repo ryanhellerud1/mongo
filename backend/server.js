@@ -12,6 +12,10 @@ import orderRoutes from './routes/orderRoutes.js';
 import cmsRoutes from './routes/cmsRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+// import { Sequelize } from 'sequelize'; // Removed, as sequelize instance is now imported
+import sequelize from './config/database.js'; // Import from new config file
+// import './models/sql/userSqlModel.js'; // Removed, as models are now imported via index.js
+import './models/sql/index.js'; // Import model definitions and associations
 
 // ES Modules fix for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -34,9 +38,30 @@ app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB Connected'))
-  .catch(err => console.error('MongoDB Connection Error:', err));
+// mongoose.connect(process.env.MONGO_URI)
+//   .then(() => console.log('MongoDB Connected'))
+//   .catch(err => console.error('MongoDB Connection Error:', err));
+
+// Sequelize initialization and connection
+// const sequelize = new Sequelize(process.env.POSTGRES_URI || 'postgres://user:password@host:port/database', {
+//   dialect: 'postgres',
+//   logging: console.log, // Optional: enable logging for debugging
+// });
+
+sequelize.authenticate()
+  .then(() => {
+    console.log('PostgreSQL Connected');
+    // Sync all defined models to the DB.
+    // 'alter: true' attempts to make changes to existing tables to match the model definitions.
+    // For production, migrations are a safer approach.
+    return sequelize.sync({ alter: true });
+  })
+  .then(() => {
+    console.log('Database synchronized with models.');
+  })
+  .catch(err => {
+    console.error('PostgreSQL Connection or Sync Error:', err);
+  });
 
 // Routes
 app.use('/api/users', userRoutes);
